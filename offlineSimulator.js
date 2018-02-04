@@ -157,7 +157,7 @@ class Battle {
                         if (this.battle.log[i] == '|split') {
                             i += 4;
                         }
-                        console.log(this.battle.log[i]);
+                        //console.log(this.battle.log[i]);
                     }
                     break;
 

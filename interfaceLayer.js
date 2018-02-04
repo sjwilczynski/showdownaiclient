@@ -807,10 +807,10 @@ class InterfaceLayer {
         }
         else if (tag == 'win') {
             if (arr[2] == this.uname) {
-                console.log('I won!');
+                //console.log('I won!');
             }
             else {
-                console.log('I lost!');
+                //console.log('I lost!');
             }
         }
             // teampreview Standards ou only, requires a response of |/team ######|1 (where ###### is the preferred order of pokemon, which we have to reorder in the model)

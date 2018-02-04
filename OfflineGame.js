@@ -37,7 +37,7 @@ class OfflineLayer {
 
                 format = 'competitive';
                 for (var j = 0; j < 2; j++) {
-                    console.log(j);
+                    //console.log(j);
                     p1.interface = new InterfaceLayer('test game', p1n, null, agent1);
                     p2.interface = new InterfaceLayer('test game', p2n, null, agent2);
                     var roomData = { id: 'test room' }
