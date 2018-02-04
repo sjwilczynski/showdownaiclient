@@ -26,10 +26,6 @@ class MiniMaxAgent {
         if (options != null){
             return options
         }
-        //TODO
-        if (typeof (player) == 'string' && player.startsWith('p')) {
-            player = parseInt(player.substring(1)) - 1;
-        }
         return Tools.parseRequestData(state.sides[player].getRequestData());
     }
 
@@ -37,21 +33,6 @@ class MiniMaxAgent {
         var myp = state.sides[state.me].active[0].hp / state.sides[state.me].active[0].maxhp;
         var thp = state.sides[1 - state.me].active[0].hp / state.sides[1 - state.me].active[0].maxhp;
         return myp - 3 * thp - 0.3 * state.turn;
-    }
-
-    getWorstOutcome(state, playerChoice, player) {
-        var nstate = state.copy();
-        var oppChoices = this.getOptions(nstate, 1 - player);
-        var worststate = null;
-        for (var choice in oppChoices) {
-            var cstate = nstate.copy();
-            cstate.choose('p' + (player + 1), playerChoice);
-            cstate.choose('p' + (1 - player + 1), choice);
-            if (worststate == null || this.evaluateState(cstate, player) < this.evaluateState(worststate, player)) {
-                worststate = cstate;
-            }
-        }
-        return worststate;
     }
 
     minimax(gameState, options, player, depth){
@@ -62,14 +43,14 @@ class MiniMaxAgent {
             return [null, this.evaluateState(gameState)]
         }
         var my_legal_actions = this.getOptions(gameState, player, options)
-        if (my_legal_actions.length == 0){
+        if (Object.keys(my_legal_actions).length == 0){
             //force switch
             this.force++ 
             return [null, this.evaluateState(gameState)]
         }
         var opp_legal_actions = this.getOptions(gameState, 1-player, null)
         var my_value = Number.NEGATIVE_INFINITY
-        if(opp_legal_actions.length == 0){
+        if(Object.keys(opp_legal_actions).length == 0){
             //force switch
             this.force++ 
             return [this.fetch_random_key(my_legal_actions), this.evaluateState(gameState)]
@@ -108,19 +89,6 @@ class MiniMaxAgent {
         nstate.me = mySide.n;
         this.mySID = mySide.n;
         this.mySide = mySide.id;
-
-
-        //TODO
-        function battleSend(type, data) {
-            if (this.sides[1 - this.me].active[0].hp == 0) {
-                this.isTerminal = true;
-            }
-            else if (this.sides[1 - this.me].currentRequest == 'switch' || this.sides[this.me].active[0].hp == 0) {
-                this.badTerminal = true;
-            }
-        }
-
-        nstate.send = battleSend;
 
         var result = this.minimax(nstate, options, mySide.n, 2)[0]
         console.log(result)
