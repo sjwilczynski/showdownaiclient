@@ -4989,7 +4989,7 @@ let Battle = (() => {
 				this.p2.name = name;
 			} else {
 				//console.log("NEW SIDE: " + name);
-				console.log(this.format);
+				//console.log(this.format);
 				if (this.format.endsWith('mirror') && this.p1.team) {
 					console.log('This is a mirror!');
 					this.p2 = new BattleSide(name, this, 1, this.p1.team);
