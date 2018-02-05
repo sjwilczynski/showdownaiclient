@@ -3,6 +3,7 @@
 var Pokemon = require('../zarel/battle-engine').BattlePokemon;
 var clone = require('../clone')
 var BattleSide = require('../zarel/battle-engine').BattleSide;
+var heuristics = require('../heuristics');
 
 class MiniMaxAgent {
     constructor() { 
@@ -10,6 +11,8 @@ class MiniMaxAgent {
         this.prune = 0
         this.force = 0
         this.count = 0
+        this.evaluateState = heuristics.baseHeuristic
+    
     }
 
     fetch_random_key(obj) {
@@ -29,11 +32,6 @@ class MiniMaxAgent {
         return Tools.parseRequestData(state.sides[player].getRequestData());
     }
 
-    evaluateState(state) {
-        var myp = state.sides[state.me].active[0].hp / state.sides[state.me].active[0].maxhp;
-        var thp = state.sides[1 - state.me].active[0].hp / state.sides[1 - state.me].active[0].maxhp;
-        return myp - 3 * thp - 0.3 * state.turn;
-    }
 
     minimax(gameState, options, player, depth){
         this.count++

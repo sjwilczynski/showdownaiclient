@@ -1,10 +1,11 @@
 'use strict';
-
+var heuristics = require('../heuristics');
 var Pokemon = require('../zarel/battle-engine').BattlePokemon;
 var deepcopy = require('deepcopy');
 
 class MyEpsilonGreedyAgent {
-    constructor() { this.name = 'EpsGreedy' }
+    constructor() { 
+        this.name = 'EpsGreedy';}
 
     fetch_random_key(obj) {
         var temp_key, keys = [];
@@ -44,7 +45,7 @@ class MyEpsilonGreedyAgent {
                 }
             }
         }
-
+    console.log(maxMoveName);
     return maxMoveName
     }
 
