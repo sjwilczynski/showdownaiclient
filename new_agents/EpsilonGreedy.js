@@ -30,42 +30,76 @@ class MyEpsilonGreedyAgent {
     }
 
 
+//    decideGreedy(gameState, options, mySide) {
+//        var maxDamage = 0;
+//        var bOption = '';
+//        var oppactive = gameState.sides[1 - mySide.n].active;
+//        for (var option in options) {
+//            var nstate = deepcopy(gameState);
+//            if (option.startsWith('move')) {
+//                var cDamage = nstate.getDamage(mySide.active[0], oppactive[0], options[option].id, false);
+//
+//                if (cDamage && cDamage > maxDamage) {
+//                    // console.log(mySide.active[0].name + "'s " + options[option].move + " is expected to deal " + cDamage + " damage to " + oppactive[0].name);
+//                    maxDamage = cDamage;
+//                    bOption = option;
+//                }
+//            }
+//            else if (option.startsWith('switch')) {
+//                var pIndex = parseInt(option.split(" ")[1]) - 1;
+//                for (var move in nstate.sides[mySide.n].pokemon[pIndex].getMoves(null, false)) {
+//                    var mID = (nstate.sides[mySide.n].pokemon[pIndex].moves[move]);
+//                    var cDamage = nstate.getDamage(mySide.pokemon[pIndex], oppactive[0], mID, false);
+//
+//                    if (cDamage && cDamage > maxDamage) {
+//                        // console.log(mySide.pokemon[pIndex].name + "'s " + mID + " is expected to deal " + cDamage + " damage to " + oppactive[0].name);
+//                        maxDamage = cDamage;
+//                        bOption = option;
+//                    }
+//                }
+//
+//            }
+//            if (maxDamage == 0) {
+//                bOption = option;
+//                maxDamage = 1;
+//            }
+//        }
+//        // console.log(bOption);
+//        return bOption;
+//    }
+
     decideGreedy(gameState, options, mySide) {
-        var maxDamage = 0;
-        var bOption = '';
-        var oppactive = gameState.sides[1 - mySide.n].active;
-        for (var option in options) {
-            var nstate = deepcopy(gameState);
-            if (option.startsWith('move')) {
-                var cDamage = nstate.getDamage(mySide.active[0], oppactive[0], options[option].id, false);
-
-                if (cDamage && cDamage > maxDamage) {
-                    // console.log(mySide.active[0].name + "'s " + options[option].move + " is expected to deal " + cDamage + " damage to " + oppactive[0].name);
-                    maxDamage = cDamage;
-                    bOption = option;
+        let maxMoveVal = 0
+        let maxMoveName = ''
+        let opponentActive = gameState.sides[1 - mySide.n].active;
+        for(let option in options){
+            let newState = gameState.copy()
+            if(option.startsWith('move')){
+                let actualMoveVal = newState.getDamage(mySide.active[0], opponentActive[0], options[option].id, false)
+                if(actualMoveVal>maxMoveVal) {
+                    maxMoveVal = actualMoveVal;
+                    maxMoveName = option
                 }
             }
-            else if (option.startsWith('switch')) {
-                var pIndex = parseInt(option.split(" ")[1]) - 1;
-                for (var move in nstate.sides[mySide.n].pokemon[pIndex].getMoves(null, false)) {
-                    var mID = (nstate.sides[mySide.n].pokemon[pIndex].moves[move]);
-                    var cDamage = nstate.getDamage(mySide.pokemon[pIndex], oppactive[0], mID, false);
-
-                    if (cDamage && cDamage > maxDamage) {
-                        // console.log(mySide.pokemon[pIndex].name + "'s " + mID + " is expected to deal " + cDamage + " damage to " + oppactive[0].name);
-                        maxDamage = cDamage;
-                        bOption = option;
+            else if(option.startsWith('switch')) {
+                let thresholdToSwitch = 2*maxMoveVal
+                let pokemonIndex = parseInt(option.split(" ")[1]) - 1
+                let nextPokemon = nstate.sides[mySide.n].pokemon[pokemonIndex]
+                for(let move in nextPokemon.getMoves(null, false)){
+                    let moveID = pokemon.moves[move]
+                    let actualMoveVal = newState.getDamage(pokemon, opponentActive[0], moveID, false)
+                    if(actualMoveVal>maxMoveVal && actualMoveVal>thresholdToSwitch) {
+                        maxMoveVal =  actualMoveVal
+                        maxMoveName = option
                     }
+
                 }
+            }
+
 
             }
-            if (maxDamage == 0) {
-                bOption = option;
-                maxDamage = 1;
-            }
-        }
-        // console.log(bOption);
-        return bOption;
+
+    return maxMoveName
     }
 
     decide(gameState, options, mySide) {
