@@ -13,6 +13,9 @@ var MinimaxAgent = require('./agents/MinimaxAgent').Agent;
 var SPAgent = require('./agents/TypeSelector').Agent;
 var PMMAgent = require('./agents/PBFS').Agent;
 var MyMiniMaxAgent = require('./new_agents/MiniMaxAgent').Agent
+var EpsGreedyAgent = require('./new_agents/EpsilonGreedy').Agent
+
+
 
 try {
     require.resolve('./zarel/config/config');
@@ -43,7 +46,7 @@ var scores = [];
 console.time('gametime');
 for (var i = 0; i < 1; i++) {
     var game = new OfflineGame();
-    scores.push(game.playGames(new MyMiniMaxAgent(), new RandomAgent(), 1, 'competitive'));
+    scores.push(game.playGames(new EpsGreedyAgent(), new MyMiniMaxAgent(), 1, 'competitive'));
 }
 console.timeEnd('gametime');
 console.log(scores);
