@@ -50,7 +50,7 @@ class MiniMaxAgent {
         var my_value = Number.NEGATIVE_INFINITY
         if(Object.keys(opp_legal_actions).length == 0){
             //force switch
-            this.force++ 
+            this.force++
             return [this.fetch_random_key(my_legal_actions), this.evaluateState(gameState)]
         }
         for (var my_action in my_legal_actions){
@@ -88,10 +88,14 @@ class MiniMaxAgent {
         this.mySID = mySide.n;
         this.mySide = mySide.id;
 
-        var result = this.minimax(nstate, options, mySide.n, 2)[0]
-        console.log(result)
-        return result
-        
+        var choice = this.minimax(nstate, options, mySide.n, 2)[0]
+
+        if (choice.startsWith('switch')) {
+            console.log(this.name + ': ' + choice, '(' + gameState[mySide.id].pokemon[choice[7] - 1].getDetails().split(',')[0] + ')');
+        } else {
+            console.log(this.name + ': ' + choice);
+        }
+        return choice;
     }
 
     assumePokemon(pname, plevel, pgender, side) {

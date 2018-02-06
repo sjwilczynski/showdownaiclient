@@ -45,7 +45,7 @@ class MyEpsilonGreedyAgent {
                 }
             }
         }
-    console.log(maxMoveName);
+    // console.log(maxMoveName);
     return maxMoveName
     }
 
@@ -53,12 +53,17 @@ class MyEpsilonGreedyAgent {
         var choose = Math.random();
         if (choose<0.1) {
             var choice = this.fetch_random_key(options);
-            return choice;
         }
         else {
-            return this.decideGreedy(gameState, options, mySide);
+            var choice = this.decideGreedy(gameState, options, mySide);
         }
 
+        if (choice.startsWith('switch')) {
+            console.log(this.name + ': ' + choice, '(' + gameState[mySide.id].pokemon[choice[7] - 1].getDetails().split(',')[0] + ')');
+        } else {
+            console.log(this.name + ': ' + choice);
+        }
+        return choice;
     }
 
     assumePokemon(pname, plevel, pgender, side) {

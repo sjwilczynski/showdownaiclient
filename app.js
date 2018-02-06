@@ -46,7 +46,7 @@ var scores = [];
 console.time('gametime');
 for (var i = 0; i < 1; i++) {
     var game = new OfflineGame();
-    scores.push(game.playGames(new EpsGreedyAgent(), new MyMiniMaxAgent(), 1, 'competitive'));
+    scores.push(game.playGames(new EpsGreedyAgent(), new MCTSAgent(100, 300), 1, 'competitive'));
 }
 console.timeEnd('gametime');
 console.log(scores);

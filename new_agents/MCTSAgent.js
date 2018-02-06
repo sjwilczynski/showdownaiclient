@@ -4,16 +4,22 @@ var Pokemon = require('../zarel/battle-engine').BattlePokemon;
 var BattleSide = require('../zarel/battle-engine').BattleSide;
 
 class Node{
-    constructor(gameState, parent, simulationsRunned, simulationsWon, baseMove) {
+    constructor(gameState, parent, simulationsRunned, simulationsWon, baseMove, user, deep) {
         this.gameState = gameState;
         this.parent = parent;
         this.childs = [];
         this.simulationsRunned = simulationsRunned;
         this.simulationsWon = simulationsWon;
         this.baseMove = baseMove;
+        this.eps = 0.00001;
+        this.user = user;
+        this.deep = deep;
     }
+
     count() {
-        return this.simulationsWon / this.simulationsRunned + Math.sqrt(2 * Math.log(this.parent.simulationsRunned / this.simulationsRunned))
+        let simWon = (this.user === Node.myId)? this.simulationsWon : 1 - this.simulationsWon;
+        let simRunned = this.simulationsRunned + this.eps;
+        return simWon / simRunned + Math.sqrt(2 * Math.log(this.parent.simulationsRunned) / simRunned)
     }
 
     wonPercentage() {
@@ -23,13 +29,10 @@ class Node{
 
 
 class MyAgent{
-
-    findRoot(node) {
-        if (node.parent === null) {
-            return node;
-        } else {
-            return this.findRoot(node.parent);
-        }
+    constructor(iterationsAmount, maxDeep) {
+        this.iterationsAmount = iterationsAmount;
+        this.maxDeep = maxDeep;
+        this.name = 'MCTSAgent';
     }
 
     findLeaf(node) {
@@ -54,8 +57,7 @@ class MyAgent{
         let won = 0;
         let myHp = this.getHp(state[this.myId].pokemon);
         let hisHp = this.getHp(state[this.hisId].pokemon);
-        let root = this.findRoot(node);
-        if (root.hisHp - hisHp > root.myHp - myHp) {
+        if (Node.rootHisHp - hisHp > Node.rootMyHp - myHp) {
             won = 1;
         }
         node.simulationsRunned += 1;
@@ -65,6 +67,10 @@ class MyAgent{
             node.simulationsRunned += 1;
             node.simulationsWon += won;
         }
+    }
+
+    oppId(id) {
+        return id === this.myId ? this.hisId : this.myId;
     }
 
     getHp(pokemons) {
@@ -77,106 +83,80 @@ class MyAgent{
 
     digEvaluation(node) {
         let state = node.gameState.copy();
+        let options = this.getOptions(state, node.user);
+        let choice = Math.floor(Math.random() * Object.keys(options).length);
+        if (choice !== undefined) state.choose(node.user, Object.keys(options)[choice]);
+
         let hisHp = this.getHp(state[this.hisId].pokemon);
         let myHp = this.getHp(state[this.myId].pokemon);
-        let j = 0;
-        while (myHp > 0 && hisHp > 0) {
-            j ++;
-            if (j===10) {
-                // console.log("really don't know what happend");
+        for (let j = 0; j < this.maxDeep - node.deep; ++j) {
+            if (this.getHp(state[this.hisId].pokemon) === 0 || this.getHp(state[this.myId].pokemon) === 0) {
                 break;
             }
+
             let myOptions = this.getOptions(state, this.myId);
             let hisOptions = this.getOptions(state, this.hisId);
+
             let myChoice = Math.floor(Math.random() * Object.keys(myOptions).length);
             let hisChoice = Math.floor(Math.random() * Object.keys(hisOptions).length);
-            let myOption;
-            let hisOption;
-            let i = 0;
-            for (myOption in myOptions) {
-                if (i === myChoice) break;
-                ++i;
-            }
-            i = 0;
-            for (hisOption in hisOptions) {
-                if (i === hisChoice) break;
-                ++i;
-            }
+
+            let myOption = Object.keys(myOptions)[myChoice];
+            let hisOption = Object.keys(hisOptions)[hisChoice];
+
             if (myOption !== undefined) state.choose(this.myId, myOption);
             // else state[this.myId].currentRequest = 'move';
             if (hisOption !== undefined) state.choose(this.hisId, hisOption);
             // else state[this.hisId].currentRequest = 'move';
-            hisHp = this.getHp(state[this.hisId].pokemon);
-            myHp = this.getHp(state[this.myId].pokemon);
         }
         this.evaluate(node, state);
     }
 
     expanse(node) {
-        let myOptions = this.getOptions(node.gameState, this.myId);
-        let hisOptions = this.getOptions(node.gameState, this.hisId);
-        if (Object.keys(hisOptions) === 0 || Object.keys(myOptions) === 0) {
-            this.evaluate(node)
-        } else {
-            for (let myOption in myOptions) {
-                for (let hisOption in hisOptions) {
-                    let childState = node.gameState.copy();
-                    childState.choose(this.myId, myOption);
-                    childState.choose(this.hisId, hisOption);
-                    let child = new Node(childState, node, 0, 0, myOptions[myOption]);
-                    this.digEvaluation(child);
-                    node.childs.push(child)
-                }
-            }
-        }
-    }
+        let options = this.getOptions(node.gameState, node.user);
 
-    expanseRoot(node) {
-        let myOptions = this.getOptions(node.gameState, this.myId);
-        let hisOptions = this.getOptions(node.gameState, this.hisId);
-        if (Object.keys(hisOptions) === 0 || Object.keys(myOptions) === 0) {
-            this.evaluate(node)
+        if (Object.keys(options).length === 0) {
+            let childState = node.gameState.copy();
+            let child = new Node(childState, node, 0, 0, "move", this.oppId(node.user), node.deep + 1);
+            node.childs.push(child)
         } else {
-            for (let myOption in myOptions) {
+            for (let option in options) {
                 let childState = node.gameState.copy();
-                childState.choose(this.myId, myOption);
-                childState.baseMove = myOption;
-                let child = new Node(childState, node, 0, 0, myOptions[myOption]);
-                node.childs.push(child);
-                for (let hisOption in hisOptions) {
-                    let grandChildState = childState.copy();
-                    childState.choose(this.hisId, hisOption);
-                    let grandChild = new Node(grandChildState, child, 0, 0, myOptions[myOption]);
-                    this.digEvaluation(grandChild);
-                    child.childs.push(grandChild)
-                }
+                childState.choose(node.user, option);
+                let child = new Node(childState, node, 0, 0, option, this.oppId(node.user), node.deep + 1);
+                node.childs.push(child)
             }
         }
+        let randomChild = Math.floor(Math.random() * node.childs.length);
+        this.digEvaluation(node.childs[randomChild]);
     }
 
     getOptions(state, player) {
-        if (typeof (player) == 'string' && player.startsWith('p')) {
+        if (typeof (player) === 'string' && player.startsWith('p')) {
             player = parseInt(player.substring(1)) - 1;
         }
         return Tools.parseRequestData(state.sides[player].getRequestData());
     }
 
-    decide(gameState, options, mySide, forceSwitch) {
-        var state = gameState.copy();
+    decide(gameState, options, mySide) {
+        let state = gameState.copy();
         state.p1.currentRequest = 'move';
         state.p2.currentRequest = 'move';
         this.myId = mySide.id;
         this.hisId = gameState.p1.id === this.myId ? gameState.p2.id : gameState.p1.id;
-        var myNr = parseInt(this.myId.substring(1)) - 1;
-        var hisNr = parseInt(this.hisId.substring(1)) - 1;
-        let myHp = this.getHp(state[this.myId].pokemon)
-        let hisHp = this.getHp(state[this.hisId].pokemon)
+        Node.myId = this.myId;
 
-        var root = new Node(state, null, 0, 0, options[0])
-        root.myHp = myHp;
-        root.hisHp = hisHp;
-        this.expanseRoot(root);
-        for (var i = 0; i < 10; ++i) {
+        if (Object.keys(this.getOptions(state, this.myId)).length === 0 || Object.keys(this.getOptions(state, this.hisId)).length === 0) {
+            console.log("MY: ", this.getOptions(state, this.myId));
+            console.log("his: ", this.getOptions(state, this.hisId));
+        }
+
+
+        Node.rootMyHp = this.getHp(state[this.myId].pokemon);
+        Node.rootHisHp = this.getHp(state[this.hisId].pokemon);
+
+        let root = new Node(state, null, 0, 0, "move", this.myId, 0);
+
+        for (var i = 0; i < this.iterationsAmount; ++i) {
             var leaf = this.findLeaf(root);
             this.expanse(leaf);
         }
@@ -187,16 +167,13 @@ class MyAgent{
                 bestChild = root.childs[child];
             }
         }
-
-        console.log(bestChild.baseMove.choice);
-        return bestChild.baseMove.choice;
-
-
-
-        // for (option in options) {
-        //     console.log(state.getDamage(state.p1.active[0], state.p2.active[0], options[option].id, false));
-        // }
-
+        let choice = bestChild.baseMove;
+        if (choice.startsWith('switch')) {
+            console.log(this.name + ': ' + choice, '(' + gameState[mySide.id].pokemon[choice[7] - 1].getDetails().split(',')[0] + ')');
+        } else {
+            console.log(this.name + ': ' + choice);
+        }
+        return choice;
     }
 
     digest(line) {
