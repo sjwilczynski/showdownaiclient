@@ -29,10 +29,11 @@ class Node{
 
 
 class MyAgent{
-    constructor(iterationsAmount, maxDeep) {
+    constructor(log, iterationsAmount, maxDeep) {
         this.iterationsAmount = iterationsAmount;
         this.maxDeep = maxDeep;
-        this.name = 'MCTSAgent';
+        this.name = 'our_MCTS';
+        this.log = log;
     }
 
     findLeaf(node) {
@@ -168,10 +169,12 @@ class MyAgent{
             }
         }
         let choice = bestChild.baseMove;
-        if (choice.startsWith('switch')) {
-            console.log(this.name + ': ' + choice, '(' + gameState[mySide.id].pokemon[choice[7] - 1].getDetails().split(',')[0] + ')');
-        } else {
-            console.log(this.name + ': ' + choice);
+        if (this.log) {
+            if (choice.startsWith('switch')) {
+                console.log(this.name + ': ' + choice, '(' + gameState[mySide.id].pokemon[choice[7] - 1].getDetails().split(',')[0] + ')');
+            } else {
+                console.log(this.name + ': ' + choice);
+            }
         }
         return choice;
     }

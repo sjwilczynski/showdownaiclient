@@ -6,8 +6,9 @@ var BattleSide = require('../zarel/battle-engine').BattleSide;
 var heuristics = require('../heuristics');
 
 class MiniMaxAgent {
-    constructor() { 
-        this.name = 'my_minimax' 
+    constructor(log) {
+        this.log = log;
+        this.name = 'our_MiniMax'
         this.prune = 0
         this.force = 0
         this.count = 0
@@ -90,10 +91,12 @@ class MiniMaxAgent {
 
         var choice = this.minimax(nstate, options, mySide.n, 2)[0]
 
-        if (choice.startsWith('switch')) {
-            console.log(this.name + ': ' + choice, '(' + gameState[mySide.id].pokemon[choice[7] - 1].getDetails().split(',')[0] + ')');
-        } else {
-            console.log(this.name + ': ' + choice);
+        if (this.log) {
+            if (choice.startsWith('switch')) {
+                console.log(this.name + ': ' + choice, '(' + gameState[mySide.id].pokemon[choice[7] - 1].getDetails().split(',')[0] + ')');
+            } else {
+                console.log(this.name + ': ' + choice);
+            }
         }
         return choice;
     }

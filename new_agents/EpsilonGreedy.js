@@ -4,8 +4,10 @@ var Pokemon = require('../zarel/battle-engine').BattlePokemon;
 var deepcopy = require('deepcopy');
 
 class MyEpsilonGreedyAgent {
-    constructor() { 
-        this.name = 'EpsGreedy';}
+    constructor(log) {
+        this.name = 'our_EpsGreedy';
+        this.log = log;
+    }
 
     fetch_random_key(obj) {
         var temp_key, keys = [];
@@ -58,10 +60,12 @@ class MyEpsilonGreedyAgent {
             var choice = this.decideGreedy(gameState, options, mySide);
         }
 
-        if (choice.startsWith('switch')) {
-            console.log(this.name + ': ' + choice, '(' + gameState[mySide.id].pokemon[choice[7] - 1].getDetails().split(',')[0] + ')');
-        } else {
-            console.log(this.name + ': ' + choice);
+        if (this.log) {
+            if (choice.startsWith('switch')) {
+                console.log(this.name + ': ' + choice, '(' + gameState[mySide.id].pokemon[choice[7] - 1].getDetails().split(',')[0] + ')');
+            } else {
+                console.log(this.name + ': ' + choice);
+            }
         }
         return choice;
     }
