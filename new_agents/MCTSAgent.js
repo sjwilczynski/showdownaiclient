@@ -17,7 +17,7 @@ class Node{
     }
 
     count() {
-        let simWon = (this.user === Node.myId)? this.simulationsWon : 1 - this.simulationsWon;
+        let simWon = (this.user === Node.myId)? this.simulationsWon : this.simulationsRunned - this.simulationsWon;
         let simRunned = this.simulationsRunned + this.eps;
         return simWon / simRunned + Math.sqrt(2 * Math.log(this.parent.simulationsRunned) / simRunned)
     }
@@ -32,7 +32,7 @@ class MyAgent{
     constructor(log, iterationsAmount, maxDeep) {
         this.iterationsAmount = iterationsAmount;
         this.maxDeep = maxDeep;
-        this.name = 'our_MCTS';
+        this.name = 'our_MCTS_' + iterationsAmount.toString() + '_' + maxDeep.toString();
         this.log = log;
     }
 
@@ -42,8 +42,9 @@ class MyAgent{
         } else {
             let childs = node.childs;
             let bestChild = childs[0];
+            let bestChildCount = bestChild.count();
             for (let child in childs) {
-                if (bestChild.count() < childs[child].count()) {
+                if (bestChildCount < childs[child].count()) {
                     bestChild = childs[child];
                 }
             }
@@ -96,18 +97,14 @@ class MyAgent{
             }
 
             let myOptions = this.getOptions(state, this.myId);
-            let hisOptions = this.getOptions(state, this.hisId);
-
             let myChoice = Math.floor(Math.random() * Object.keys(myOptions).length);
-            let hisChoice = Math.floor(Math.random() * Object.keys(hisOptions).length);
-
             let myOption = Object.keys(myOptions)[myChoice];
-            let hisOption = Object.keys(hisOptions)[hisChoice];
-
             if (myOption !== undefined) state.choose(this.myId, myOption);
-            // else state[this.myId].currentRequest = 'move';
+
+            let hisOptions = this.getOptions(state, this.hisId);
+            let hisChoice = Math.floor(Math.random() * Object.keys(hisOptions).length);
+            let hisOption = Object.keys(hisOptions)[hisChoice];
             if (hisOption !== undefined) state.choose(this.hisId, hisOption);
-            // else state[this.hisId].currentRequest = 'move';
         }
         this.evaluate(node, state);
     }
@@ -146,12 +143,6 @@ class MyAgent{
         this.hisId = gameState.p1.id === this.myId ? gameState.p2.id : gameState.p1.id;
         Node.myId = this.myId;
 
-        if (Object.keys(this.getOptions(state, this.myId)).length === 0 || Object.keys(this.getOptions(state, this.hisId)).length === 0) {
-            console.log("MY: ", this.getOptions(state, this.myId));
-            console.log("his: ", this.getOptions(state, this.hisId));
-        }
-
-
         Node.rootMyHp = this.getHp(state[this.myId].pokemon);
         Node.rootHisHp = this.getHp(state[this.hisId].pokemon);
 
@@ -169,6 +160,7 @@ class MyAgent{
             }
         }
         let choice = bestChild.baseMove;
+
         if (this.log) {
             if (choice.startsWith('switch')) {
                 console.log(this.name + ': ' + choice, '(' + gameState[mySide.id].pokemon[choice[7] - 1].getDetails().split(',')[0] + ')');
@@ -179,9 +171,7 @@ class MyAgent{
         return choice;
     }
 
-    digest(line) {
-
-    }
+    digest(line) {}
 
     assumePokemon(pname, plevel, pgender, side) {
         var template = Tools.getTemplate(pname);
