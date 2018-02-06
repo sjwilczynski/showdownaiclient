@@ -14,7 +14,7 @@ var SPAgent = require('./agents/TypeSelector').Agent;
 var PMMAgent = require('./agents/PBFS').Agent;
 var MyMiniMaxAgent = require('./new_agents/MiniMaxAgent').Agent
 var EpsGreedyAgent = require('./new_agents/EpsilonGreedy').Agent
-
+var MCTSAgent = require('./new_agents/MCTSAgent').Agent
 
 
 try {
