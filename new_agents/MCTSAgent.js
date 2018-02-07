@@ -17,7 +17,7 @@ class Node{
     }
 
     count() {
-        let simWon = (this.user === Node.myId)? this.simulationsWon : this.simulationsRunned - this.simulationsWon;
+        let simWon = (this.user === Node.hisId)? this.simulationsWon : this.simulationsRunned - this.simulationsWon;
         let simRunned = this.simulationsRunned + this.eps;
         return simWon / simRunned + Math.sqrt(2 * Math.log(this.parent.simulationsRunned) / simRunned)
     }
@@ -44,8 +44,10 @@ class MyAgent{
             let bestChild = childs[0];
             let bestChildCount = bestChild.count();
             for (let child in childs) {
-                if (bestChildCount < childs[child].count()) {
+                let otherChildCount = childs[child].count();
+                if (bestChildCount < otherChildCount) {
                     bestChild = childs[child];
+                    bestChildCount = otherChildCount;
                 }
             }
             return this.findLeaf(bestChild)
