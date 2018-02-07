@@ -81,7 +81,7 @@ class MiniMaxAgent {
 
 
     decide(gameState, options, mySide, forceSwitch) {
-        console.log(this.count, this.prune, this.force)
+        if (this.log) console.log(this.count, this.prune, this.force);
         var nstate = gameState.copy();
         nstate.p1.currentRequest = 'move';
         nstate.p2.currentRequest = 'move';
@@ -89,7 +89,7 @@ class MiniMaxAgent {
         this.mySID = mySide.n;
         this.mySide = mySide.id;
 
-        var choice = this.minimax(nstate, options, mySide.n, 2)[0]
+        var choice = this.minimax(nstate, options, mySide.n, 2)[0];
 
         if (this.log) {
             if (choice.startsWith('switch')) {

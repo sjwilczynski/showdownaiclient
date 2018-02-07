@@ -17,7 +17,7 @@ class Node{
     }
 
     count() {
-        let simWon = (this.user === Node.hisId)? this.simulationsWon : this.simulationsRunned - this.simulationsWon;
+        let simWon = (this.user === Node.hisId) ? this.simulationsWon : this.simulationsRunned - this.simulationsWon;
         let simRunned = this.simulationsRunned + this.eps;
         return simWon / simRunned + Math.sqrt(2 * Math.log(this.parent.simulationsRunned) / simRunned)
     }
@@ -91,8 +91,6 @@ class MyAgent{
         let choice = Math.floor(Math.random() * Object.keys(options).length);
         if (choice !== undefined) state.choose(node.user, Object.keys(options)[choice]);
 
-        let hisHp = this.getHp(state[this.hisId].pokemon);
-        let myHp = this.getHp(state[this.myId].pokemon);
         for (let j = 0; j < this.maxDeep - node.deep; ++j) {
             if (this.getHp(state[this.hisId].pokemon) === 0 || this.getHp(state[this.myId].pokemon) === 0) {
                 break;
