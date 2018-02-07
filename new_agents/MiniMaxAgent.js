@@ -38,24 +38,28 @@ class MiniMaxAgent {
         this.count++
         var best_my_action = null
         var best_opp_action = null
+        var my_value = Number.NEGATIVE_INFINITY
+        var opp_value = Number.POSITIVE_INFINITY
         if (depth == 0){
             return [null, this.evaluateState(gameState)]
         }
         var my_legal_actions = this.getOptions(gameState, player, options)
-        if (Object.keys(my_legal_actions).length == 0){
-            //force switch
+        var opp_legal_actions = this.getOptions(gameState, 1-player, null)
+        var my_moves_count = Object.keys(my_legal_actions).length
+        var opp_moves_count = Object.keys(opp_legal_actions).length
+        if (my_moves_count == 0){
+            //opponent is forced to switch - dead pokemon or special move
             this.force++ 
             return [null, this.evaluateState(gameState)]
         }
-        var opp_legal_actions = this.getOptions(gameState, 1-player, null)
-        var my_value = Number.NEGATIVE_INFINITY
-        if(Object.keys(opp_legal_actions).length == 0){
-            //force switch
+        
+        if(opp_moves_count == 0){
+            //we are forced to switch - dead pokemon or special move
             this.force++
             return [this.fetch_random_key(my_legal_actions), this.evaluateState(gameState)]
         }
         for (var my_action in my_legal_actions){
-            var opp_value = Number.POSITIVE_INFINITY
+            opp_value = Number.POSITIVE_INFINITY
             for (var opp_action in opp_legal_actions){
                 var nstate = gameState.copy()
                 nstate.choose('p' + (player + 1), my_action)
@@ -81,7 +85,9 @@ class MiniMaxAgent {
 
 
     decide(gameState, options, mySide, forceSwitch) {
-        if (this.log) console.log(this.count, this.prune, this.force);
+        if (this.log) {
+            console.log(this.count, this.prune, this.force);
+        }
         var nstate = gameState.copy();
         nstate.p1.currentRequest = 'move';
         nstate.p2.currentRequest = 'move';
