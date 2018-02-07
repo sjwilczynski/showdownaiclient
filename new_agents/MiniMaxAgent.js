@@ -6,13 +6,14 @@ var BattleSide = require('../zarel/battle-engine').BattleSide;
 var heuristics = require('../heuristics');
 
 class MiniMaxAgent {
-    constructor(log) {
+    constructor(log, depth=2) {
         this.log = log;
         this.name = 'our_MiniMax'
         this.prune = 0
         this.force = 0
         this.count = 0
-        this.evaluateState = heuristics.baseHeuristic
+        this.evaluateState = heuristics.betterHeuristic
+        this.depth = depth
     
     }
 
@@ -47,39 +48,60 @@ class MiniMaxAgent {
         var opp_legal_actions = this.getOptions(gameState, 1-player, null)
         var my_moves_count = Object.keys(my_legal_actions).length
         var opp_moves_count = Object.keys(opp_legal_actions).length
-        if (my_moves_count == 0){
-            //opponent is forced to switch - dead pokemon or special move
+        if (my_moves_count == 0 && opp_moves_count == 0){
+            //not sure if possible
             this.force++ 
             return [null, this.evaluateState(gameState)]
-        }
-        
-        if(opp_moves_count == 0){
+        } else if (my_moves_count > 0 && opp_moves_count == 0){
             //we are forced to switch - dead pokemon or special move
-            this.force++
-            return [this.fetch_random_key(my_legal_actions), this.evaluateState(gameState)]
-        }
-        for (var my_action in my_legal_actions){
-            opp_value = Number.POSITIVE_INFINITY
-            for (var opp_action in opp_legal_actions){
+            this.force++ 
+            for (var my_action in my_legal_actions){
                 var nstate = gameState.copy()
                 nstate.choose('p' + (player + 1), my_action)
+                var value = this.minimax(nstate, null, player, depth-1)[1]
+                if (value > my_value){
+                    best_my_action = my_action
+                    my_value = value
+                }
+            }
+        } else if (my_moves_count == 0 && opp_moves_count > 0){
+            // opponent is forced to switch - dead pokemon or special move
+            this.force++ 
+            for (var opp_action in opp_legal_actions){
+                var nstate = gameState.copy()
                 nstate.choose('p' + (1 - player + 1), opp_action)
                 var value = this.minimax(nstate, null, player, depth-1)[1]
                 if (value < opp_value){
                     opp_value = value
                     best_opp_action = opp_action
                 }
-                if(value < my_value){
-                    //prune
-                    this.prune++
-                    break
+            }
+            return [null, opp_value]
+
+        } else{
+            for (var my_action in my_legal_actions){
+                opp_value = Number.POSITIVE_INFINITY
+                for (var opp_action in opp_legal_actions){
+                    var nstate = gameState.copy()
+                    nstate.choose('p' + (player + 1), my_action)
+                    nstate.choose('p' + (1 - player + 1), opp_action)
+                    var value = this.minimax(nstate, null, player, depth-1)[1]
+                    if (value < opp_value){
+                        opp_value = value
+                        best_opp_action = opp_action
+                    }
+                    if(value < my_value){
+                        //prune
+                        this.prune++
+                        break
+                    }
+                }
+                if (opp_value > my_value){
+                    best_my_action = my_action
+                    my_value = opp_value
                 }
             }
-            if (opp_value > my_value){
-                best_my_action = my_action
-                my_value = opp_value
-            }
-        }
+        }        
         return [best_my_action, my_value]
     }
 
@@ -95,7 +117,7 @@ class MiniMaxAgent {
         this.mySID = mySide.n;
         this.mySide = mySide.id;
 
-        var choice = this.minimax(nstate, options, mySide.n, 2)[0];
+        var choice = this.minimax(nstate, options, mySide.n, this.depth)[0];
 
         if (this.log) {
             if (choice.startsWith('switch')) {
