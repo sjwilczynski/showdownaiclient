@@ -124,6 +124,7 @@ class MyAgent{
                 node.childs.push(child)
             }
         }
+        node.gameState = null;
         let randomChild = Math.floor(Math.random() * node.childs.length);
         this.digEvaluation(node.childs[randomChild]);
     }
@@ -155,7 +156,7 @@ class MyAgent{
 
         var bestChild = root.childs[0];
         for (var child in root.childs) {
-            if (root.childs[child].wonPercentage() > bestChild.wonPercentage()) {
+            if (root.childs[child].simulationsRunned > bestChild.simulationsRunned) {
                 bestChild = root.childs[child];
             }
         }
